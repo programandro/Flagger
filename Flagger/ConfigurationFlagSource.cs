@@ -1,4 +1,5 @@
 ﻿using Flagger.Configuration;
+using Flagger.Sources;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
