@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Flagger" Version="1.0.0-alpha01" />
+    <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="Unity.Container" Version="5.8.11" />
   </ItemGroup>
 
