@@ -1,9 +1,11 @@
+using Flagger.Unity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Unity;
+using Unity.Injection;
 
 namespace TestConsole
 {
@@ -12,8 +14,12 @@ namespace TestConsole
         static void Main(string[] args)
         {
             var container = new UnityContainer();
-            container.RegisterType<ISolution, SolutionB>();
-            container.RegisterType<ISolution, SolutionA>();
+            container.AddExtension(new FlagExtension());
+            //container.RegisterType<ISolution>(new InjectionFactory(c => new SolutionA()));
+
+            container.RegisterType<ISolution>(new FeatureInjectionMember("solution", null, 
+                                                                    new StrategyTypeResolver("a", typeof(SolutionA)),
+                                                                    new StrategyTypeResolver("b", typeof(SolutionB))));
 
             var solution = container.Resolve<ISolution>();
             Console.WriteLine(solution.Get());

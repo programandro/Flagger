@@ -5,32 +5,10 @@ using Unity.Policy;
 using Unity.Registration;
 using System.Linq;
 using Unity.Policy.Mapping;
+using Unity.Builder;
 
 namespace Flagger.Unity
 {
-    public class FeatureInjectionMember<T> : FeatureInjectionMember
-    {
-        public FeatureInjectionMember(string featureName, Type nullType, params StrategyTypeResolver[] strategies)
-            : base(BuildFactoryFunction(featureName, null, nullType, null, strategies))
-        {
-        }
-
-        public FeatureInjectionMember(string featureName, string nullName, Type nullType, params StrategyTypeResolver[] strategies)
-            : base(BuildFactoryFunction(featureName, nullName, nullType, null, strategies))
-        {
-        }
-
-        public FeatureInjectionMember(string featureName, object nullInstance, params StrategyTypeResolver[] strategies)
-            : base(BuildFactoryFunction(featureName, null, null, nullInstance, strategies))
-        {
-        }
-
-        public FeatureInjectionMember(string featureName, params StrategyTypeResolver[] strategies)
-            : base(BuildFactoryFunction(featureName, null, null, null, strategies))
-        {
-        }
-    }
-
     public class FeatureInjectionMember : InjectionMember
     {
         private string _featureName;
@@ -48,17 +26,27 @@ namespace Flagger.Unity
 
         public override void AddPolicies(Type serviceType, Type implementationType, string name, IPolicyList policies)
         {
+            string newName;
             if (_emptyType != null)
             {
-                var emptyPolicy = BuildPolicy(_featureName, EmptyStrategyName, name, _emptyType, policies);
-                policies.Set()
+                var emptyPolicy = BuildPolicy(_featureName, EmptyStrategyName, name, _emptyType, out newName);
+                policies.Set(emptyPolicy, new NamedTypeBuildKey(implementationType, newName));
             }
 
-
-            
+            if (policies != null)
+            {
+                foreach (var strategy in _strategies)
+                {
+                    var policy = BuildPolicy(_featureName, strategy.StrategyName, name, strategy.Type, out newName);
+                    policies.Set(policy, newName);
+                }
+            }
         }
 
-        private IBuilderPolicy BuildPolicy(string featureName, string strategyName, string name, Type type, IPolicyList policies)
-            => new BuildKeyMappingPolicy(type, $"$${featureName}$${strategyName}$${name ?? string.Empty}", true);
+        private IBuilderPolicy BuildPolicy(string featureName, string strategyName, string name, Type type, out string newName)
+        {
+            newName = $"$${featureName}$${strategyName}$${name ?? string.Empty}";
+            return new BuildKeyMappingPolicy(type, newName, true);
+        }
     }
 }

@@ -35,6 +35,9 @@
     <Reference Include="Flagger, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Flagger.1.0.0-alpha01\lib\netstandard1.0\Flagger.dll</HintPath>
     </Reference>
+    <Reference Include="Flagger.Unity, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Flagger.Unity.1.0.0-alpha06\lib\netstandard2.0\Flagger.Unity.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
     </Reference>
