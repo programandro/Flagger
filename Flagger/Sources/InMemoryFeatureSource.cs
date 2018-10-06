@@ -9,7 +9,7 @@ namespace Flagger.Sources
     {
         private readonly IEnumerable<Feature> _features;
 
-        internal InMemoryFeatureSource(IEnumerable<Feature> features)
+        public InMemoryFeatureSource(IEnumerable<Feature> features)
         {
             _features = features;
         }

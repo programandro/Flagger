@@ -1,6 +1,6 @@
 ﻿namespace Flagger
 {
-    internal interface IFeatureSource
+    public interface IFeatureSource
     {
         bool IsEnabled(string featureName);
         bool IsEnabled(string featureName, string strategyName);

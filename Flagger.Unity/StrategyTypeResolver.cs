@@ -30,7 +30,7 @@ namespace Flagger.Unity
             : base(strategyName, typeof(T), null)
         { }
 
-        public StrategyTypeResolver(string strategyName, object instance)
+        public StrategyTypeResolver(string strategyName, T instance)
             : base(strategyName, typeof(T), instance)
         { }
     }

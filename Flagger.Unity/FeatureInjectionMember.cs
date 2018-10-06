@@ -9,44 +9,84 @@ using Unity.Builder;
 
 namespace Flagger.Unity
 {
-    public class FeatureInjectionMember : InjectionMember
+    public class FeatureInjectionMember : InjectionFactory
     {
-        private string _featureName;
-        private Type _emptyType;
-        private StrategyTypeResolver[] _strategies;
+        public FeatureInjectionMember(string featureName, Type nullPatternType, params StrategyTypeResolver[] strategies)
+            :base(GetFactoryFunction(featureName, nullPatternType, strategies))
+        { }
 
-        private static string EmptyStrategyName => "empty";
+        public FeatureInjectionMember(string featureName, object nullPatternObject, params StrategyTypeResolver[] strategies)
+            : base(GetFactoryFunction(featureName, nullPatternObject, strategies))
+        { }
 
-        public FeatureInjectionMember(string featureName, Type emptyType, params StrategyTypeResolver[] strategies)
+        public FeatureInjectionMember(string featureName, params StrategyTypeResolver[] strategies)
+            : base(GetFactoryFunction(featureName, strategies))
+        { }
+
+        private static Func<IUnityContainer, Type, string, object> GetFactoryFunction(string featureName, Type nullPatternType, StrategyTypeResolver[] strategies)
         {
-            _featureName = featureName;
-            _emptyType = emptyType;
-            _strategies = strategies;
+            return (c, t, n) =>
+            {
+                if (!Flag.IsEnabled(featureName))
+                    return c.Resolve(nullPatternType);
+
+                return ResolveFromStrategies(featureName, strategies, c);
+            };
         }
 
-        public override void AddPolicies(Type serviceType, Type implementationType, string name, IPolicyList policies)
+        private static Func<IUnityContainer, Type, string, object> GetFactoryFunction(string featureName, object nullPatternObject, StrategyTypeResolver[] strategies)
         {
-            string newName;
-            if (_emptyType != null)
+            return (c, t, n) =>
             {
-                var emptyPolicy = BuildPolicy(_featureName, EmptyStrategyName, name, _emptyType, out newName);
-                policies.Set(emptyPolicy, new NamedTypeBuildKey(implementationType, newName));
-            }
+                if (!Flag.IsEnabled(featureName))
+                    return nullPatternObject;
 
-            if (policies != null)
-            {
-                foreach (var strategy in _strategies)
-                {
-                    var policy = BuildPolicy(_featureName, strategy.StrategyName, name, strategy.Type, out newName);
-                    policies.Set(policy, newName);
-                }
-            }
+                return ResolveFromStrategies(featureName, strategies, c);
+            };
         }
 
-        private IBuilderPolicy BuildPolicy(string featureName, string strategyName, string name, Type type, out string newName)
+        private static Func<IUnityContainer, Type, string, object> GetFactoryFunction(string featureName, StrategyTypeResolver[] strategies)
         {
-            newName = $"$${featureName}$${strategyName}$${name ?? string.Empty}";
-            return new BuildKeyMappingPolicy(type, newName, true);
+            return (c, t, n) =>
+            {
+                if (!Flag.IsEnabled(featureName))
+                    return null;
+
+                return ResolveFromStrategies(featureName, strategies, c);
+            };
+        }
+
+        private static object ResolveFromStrategies(string featureName, StrategyTypeResolver[] strategies, IUnityContainer container)
+        {
+            var strategy = strategies?.FirstOrDefault(s => Flag.IsEnabled(featureName, s.StrategyName));
+
+            if (strategy != null)
+            {
+                if (strategy.Type != null)
+                    return container.Resolve(strategy.Type);
+
+                return strategy.Instance;
+            }
+
+            return null;
+        }
+    }
+
+    public class FeatureInjectionMemeber<T> : FeatureInjectionMember
+    {
+        public FeatureInjectionMemeber(string featureName, params StrategyTypeResolver<T>[] strategies) : base(featureName, strategies)
+        {
+        }
+    }
+
+    public class FeatureInjectionMemeber<T, TNull> : FeatureInjectionMember where TNull : T
+    {
+        public FeatureInjectionMemeber(string featureName, params StrategyTypeResolver<T>[] strategies) : base(featureName, typeof(TNull), strategies)
+        {
+        }
+
+        public FeatureInjectionMemeber(string featureName, TNull nullPatternObject, params StrategyTypeResolver<T>[] strategies) : base(featureName, nullPatternObject, strategies)
+        {
         }
     }
 }

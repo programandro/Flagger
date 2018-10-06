@@ -1,3 +1,5 @@
+using Flagger;
+using Flagger.Sources;
 using Flagger.Unity;
 using System;
 using System.Collections.Generic;
@@ -13,11 +15,24 @@ namespace TestConsole
     {
         static void Main(string[] args)
         {
-            var container = new UnityContainer();
-            container.AddExtension(new FlagExtension());
-            //container.RegisterType<ISolution>(new InjectionFactory(c => new SolutionA()));
+            var source = new InMemoryFeatureSource(new[]
+            {
+                new Feature
+                {
+                    Name = "solution",
+                    Enabled = true,
+                    Strategies = new[]
+                    {
+                        new Strategy { Name = "a" },
+                        new Strategy { Name = "b", Enabled = true }
+                    }
+                }
+            });
+            Flag.SetSource(source);
 
-            container.RegisterType<ISolution>(new FeatureInjectionMember("solution", null, 
+            var container = new UnityContainer();
+
+            container.RegisterType<ISolution>(new FeatureInjectionMember("solution", 
                                                                     new StrategyTypeResolver("a", typeof(SolutionA)),
                                                                     new StrategyTypeResolver("b", typeof(SolutionB))));
 

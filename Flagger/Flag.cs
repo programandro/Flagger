@@ -6,7 +6,7 @@ namespace Flagger
     {
         private static IFeatureSource _flagSource;
 
-        internal static void SetSource(IFeatureSource flagSource)
+        public static void SetSource(IFeatureSource flagSource)
         {
             _flagSource = flagSource;
         }

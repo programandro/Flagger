@@ -7,13 +7,17 @@ namespace Flagger.Sources
 {
     public abstract class PreloadFeatureSource : IFeatureSource
     {
-        public IEnumerable<Feature> Features => _features;
-        private readonly IEnumerable<Feature> _features;
-
-        internal PreloadFeatureSource()
+        public IEnumerable<Feature> Features
         {
-            _features = LoadFeatures();
+            get
+            {
+                if (_features == null)
+                    _features = LoadFeatures();
+
+                return _features;
+            }
         }
+        private IEnumerable<Feature> _features;
 
         protected abstract IEnumerable<Feature> LoadFeatures();
 
@@ -22,7 +26,7 @@ namespace Flagger.Sources
 
         private Feature GetFeature(string featureName)
         {
-            var feature = _features?.FirstOrDefault(f => f.Name == featureName);
+            var feature = Features?.FirstOrDefault(f => f.Name == featureName);
             if (feature == null)
                 throw new ArgumentException($"No feature exist with name {StringOrNull(featureName)}");
 
