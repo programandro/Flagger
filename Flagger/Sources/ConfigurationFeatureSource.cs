@@ -1,12 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Flagger.Configuration;
+using Flagger.Sources;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flagger.Sources
+namespace Flagger
 {
     public class ConfigurationFeatureSource : PreloadFeatureSource
     {
+        public static string RootSectionName => "flagger";
         private readonly IConfiguration _configuration;
 
         public ConfigurationFeatureSource(IConfiguration configuration)
@@ -14,14 +17,16 @@ namespace Flagger.Sources
             _configuration = configuration;
         }
 
-        public ConfigurationFeatureSource()
-        {
-            //new ConfigurationBuilder().AddXmlFile()
-        }
-
         protected override IEnumerable<Feature> LoadFeatures()
         {
-            throw new NotImplementedException();
+            var featuresSection = _configuration.GetSection(RootSectionName);
+            FeaturesSection features;
+            if (featuresSection == null)
+                features = FeaturesSection.Empty;
+
+            features = new FeaturesSection();
+            featuresSection.Bind(features);
+            return features.Features;
         }
     }
 }

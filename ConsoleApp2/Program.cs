@@ -1,6 +1,7 @@
 ﻿using Flagger;
 using Flagger.Sources;
 using Flagger.Unity;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,20 +15,12 @@ namespace ConsoleApp2
     {
         static void Main(string[] args)
         {
-            var source = new InMemoryFeatureSource(new[]
-            {
-                new Feature
-                {
-                    Name = "solution",
-                    Enabled = true,
-                    Strategies = new[]
-                    {
-                        new Strategy { Name = "a" },
-                        new Strategy { Name = "b", Enabled = true }
-                    }
-                }
-            });
-            Flag.SetSource(source);
+            var conf = new ConfigurationBuilder()
+                            .AddXmlFile(@"app.config")
+                            .Build();
+
+            
+            Flag.SetSource(new ConfigurationFeatureSource(conf));
 
             var container = new UnityContainer();
 
